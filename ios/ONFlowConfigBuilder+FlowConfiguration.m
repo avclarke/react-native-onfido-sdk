@@ -7,6 +7,7 @@
 //
 
 #import "ONFlowConfigBuilder+FlowConfiguration.h"
+#import "UIColor+Hexadecimal.h"
 
 @implementation ONFlowConfigBuilder (FlowConfiguration)
 
@@ -50,6 +51,7 @@
     NSString *token = dictionary[@"token"];
     NSString *applicantId = dictionary[@"applicantId"];
     NSArray *documentTypes =dictionary[@"documentTypes"];
+    NSDictionary *appearanceOptions = [RCTConvert NSDictionary:dictionary[@"appearance"]];
 
     ONFlowConfigBuilder *configBuilder = [ONFlowConfig builder];
     [configBuilder withToken:token];
@@ -59,8 +61,34 @@
     } else {
         [configBuilder withDocumentStep];
     }
+  
+    if (appearanceOptions) {
+      
+        UIColor * primaryColor = appearanceOptions[@"primaryColor"] ? [UIColor colorWithHexString: appearanceOptions[@"primaryColor"]] : [UIColor blueColor];
+        UIColor * primaryTitleColor = appearanceOptions[@"primaryTitleColor"] ? [UIColor colorWithHexString: appearanceOptions[@"primaryTitleColor"]] : [UIColor blackColor];
+        UIColor * primaryButtonColor = appearanceOptions[@"primaryButtonColor"] ? [UIColor colorWithHexString: appearanceOptions[@"primaryButtonColor"]] : [UIColor blueColor];
+        UIColor * secondaryButtonColor = appearanceOptions[@"secondaryButtonColor"] ? [UIColor colorWithHexString: appearanceOptions[@"secondaryButtonColor"]] : [UIColor blueColor];
 
-    [configBuilder withFaceStepOfVariant:ONFaceStepVariantPhoto];
+        ONAppearance *appearance = [[ONAppearance alloc]
+                                    initWithPrimaryColor: primaryColor
+                                      primaryTitleColor: primaryTitleColor
+                                      primaryBackgroundPressedColor: primaryButtonColor
+                                      secondaryBackgroundPressedColor: secondaryButtonColor
+                                      fontRegular: NULL
+                                      fontBold: NULL
+                                      supportDarkMode: false];
+
+        [configBuilder withAppearance:appearance];
+    }
+  
+    NSError *variantConfigError = NULL;
+    Builder *variantBuilder = [ONFaceStepVariantConfig builder];
+    [variantBuilder withPhotoCaptureWithConfig: NULL];
+    [configBuilder withFaceStepOfVariant: [variantBuilder buildAndReturnError: &variantConfigError]];
+
+    if (variantConfigError != NULL) {
+        return errorCallback(variantConfigError);
+    }
     
     NSError *configError = NULL;
     ONFlowConfig *config = [configBuilder buildAndReturnError:&configError];
