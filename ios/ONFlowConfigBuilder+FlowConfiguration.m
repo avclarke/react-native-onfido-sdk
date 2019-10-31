@@ -57,7 +57,7 @@
     [configBuilder withToken:token];
     [configBuilder withApplicantId:applicantId];
     if (documentTypes && documentTypes.count && [documentTypes[0] integerValue] != 4) {
-        [configBuilder withDocumentStepOfType:[documentTypes[0] integerValue] andCountryCode:@""];
+        [configBuilder withDocumentStepOfType:documentTypes[0] andCountryCode:@""];
     } else {
         [configBuilder withDocumentStep];
     }
@@ -83,7 +83,9 @@
   
     NSError *variantConfigError = NULL;
     Builder *variantBuilder = [ONFaceStepVariantConfig builder];
-    [variantBuilder withPhotoCaptureWithConfig: NULL];
+//    [variantBuilder withPhotoCaptureWithConfig: NULL];
+    [variantBuilder withVideoCaptureWithConfig:
+    [[VideoStepConfiguration alloc] initWithShowIntroVideo: YES]];
     [configBuilder withFaceStepOfVariant: [variantBuilder buildAndReturnError: &variantConfigError]];
 
     if (variantConfigError != NULL) {
